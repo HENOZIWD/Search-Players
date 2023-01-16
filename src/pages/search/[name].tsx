@@ -1,6 +1,8 @@
-import Layout from "@/components/layout";
-import { InferGetServerSidePropsType } from "next";
-import Head from "next/head";
+import Layout from '@/components/layout';
+import { InferGetServerSidePropsType } from 'next';
+import Head from 'next/head';
+import styled from 'styled-components';
+import MatchList, { IMatchData } from '@/components/matchList';
 
 interface ISummonerName {
     params: {name: string};
@@ -33,15 +35,41 @@ export async function getServerSideProps({ params }: ISummonerName) {
 
     const rankData = await rankRes.json();
 
+    const matchListIdRes = await fetch(
+      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=5`,
+      options
+    );
+
+    const matchListIdData = await matchListIdRes.json();
+
+    const matchListData: IMatchData[] = await Promise.all(
+      matchListIdData.map(async (matchId: string): Promise<IMatchData> => {
+        const matchDataRes = await fetch(
+          `https://asia.api.riotgames.com/lol/match/v5/matches/${encodeURI(matchId)}`,
+          options
+        );
+
+        const matchListData = await matchDataRes.json();
+
+        return matchListData;
+      })
+    )
+
+    // console.log(matchListData);
+
     const data = {
       summonerData: summonerData,
       rankData: rankData,
+      matchListData: matchListData,
     };
 
-    console.log(data);
     
     return { props: { data } };
 }
+
+const Profile = styled.div`
+  
+`
 
 export default function Summoner({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     
@@ -56,8 +84,8 @@ export default function Summoner({ data }: InferGetServerSidePropsType<typeof ge
         ##Summoner
         <br />
         {/* <p>id: {data?.summonerData.id}</p>
-        <p>accountId: {data?.summonerData.accountId}</p>
-        <p>puuid: {data?.summonerData.puuid}</p> */}
+        <p>accountId: {data?.summonerData.accountId}</p> */}
+        <p>puuid: {data?.summonerData.puuid}</p>
         <p>name: {data?.summonerData.name}</p>
         <p>profileIconId: {data?.summonerData.profileIconId}</p>
         {/* <p>revisionDate: {data?.summonerData.revisionDate}</p> */}
@@ -84,6 +112,9 @@ export default function Summoner({ data }: InferGetServerSidePropsType<typeof ge
               <br />
             </div>
           ))}
+        <br />
+        ##Match
+        {data?.matchListData && <MatchList data={data.matchListData}/>}
       </Layout>
     );
 }
