@@ -2,7 +2,7 @@ import Layout from '@/components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import Head from 'next/head';
 import styled from 'styled-components';
-import MatchList, { IMatchData } from '@/components/matchList';
+import MatchList, { IMatchData, IReducedMatchData, IParticipantsInfoData } from '@/components/matchList';
 
 interface ISummonerName {
     params: {name: string};
@@ -36,13 +36,23 @@ export async function getServerSideProps({ params }: ISummonerName) {
     const rankData = await rankRes.json();
 
     const matchListIdRes = await fetch(
-      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=5`,
+      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=10`,
       options
     );
 
+    if (matchListIdRes.status !== 200) {
+      alert(matchListIdRes.status);
+      console.log(matchListIdRes.status);
+
+      const errData = null;
+      return {
+        props: { errData }
+      };
+    }
+
     const matchListIdData = await matchListIdRes.json();
 
-    const matchListData: IMatchData[] = await Promise.all(
+    const matchListFullData: IMatchData[] = await Promise.all(
       matchListIdData.map(async (matchId: string): Promise<IMatchData> => {
         const matchDataRes = await fetch(
           `https://asia.api.riotgames.com/lol/match/v5/matches/${encodeURI(matchId)}`,
@@ -55,7 +65,65 @@ export async function getServerSideProps({ params }: ISummonerName) {
       })
     )
 
-    // console.log(matchListData);
+    // console.log(matchListFullData);
+
+    let matchListData = new Array<IReducedMatchData>();
+
+    matchListFullData.map((match: IMatchData) => {
+      let participantsData = new Array<IParticipantsInfoData>();
+
+      match.info.participants.map((participant: any) => {
+        const pInfoData: IParticipantsInfoData = {
+          summonerId: participant.summonerId,
+          summonerName: participant.summonerName,
+          puuid: participant.puuid,
+          win: participant.win,
+          kills: participant.kills,
+          deaths: participant.deaths,
+          assists: participant.assists,
+          champLevel: participant.champLevel,
+          championId: participant.championId,
+          championName: participant.championName,
+          goldEarned: participant.goldEarned,
+          totalDamageDealtToChampions: participant.totalDamageDealtToChampions,
+          totalDamageTaken: participant.totalDamageTaken,
+          visionScore: participant.visionScore,
+          sightWardsBoughtInGame: participant.sightWardsBoughtInGame,
+          item0: participant.item0,
+          item1: participant.item1,
+          item2: participant.item2,
+          item3: participant.item3,
+          item4: participant.item4,
+          item5: participant.item5,
+          item6: participant.item6,
+        }
+
+        // console.log(pInfoData);
+
+        participantsData.push(pInfoData);
+      })
+
+      const gameDuration: number = match.info.gameDuration;
+      const gameDurationToString: string = String(Math.floor(gameDuration / 60)) 
+        + ":" 
+        + (((gameDuration % 60) < 10) ? 
+          ("0" + String(gameDuration % 60)) : (String(gameDuration % 60))
+      );
+
+      // const gameEndDate = new Date(match.info.gameEndTimestamp);
+
+      const matchData: IReducedMatchData = {
+        matchId: match.metadata.matchId,
+        participantsId: match.metadata.participants,
+        gameDuration: gameDurationToString,
+        gameEndTimestamp: match.info.gameEndTimestamp,
+        gameMode: match.info.gameMode,
+        gameType: match.info.gameType,
+        participantsInfo: participantsData,
+      }
+
+      matchListData.push(matchData);
+    });
 
     const data = {
       summonerData: summonerData,
@@ -66,10 +134,6 @@ export async function getServerSideProps({ params }: ISummonerName) {
     
     return { props: { data } };
 }
-
-const Profile = styled.div`
-  
-`
 
 export default function Summoner({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     
@@ -84,8 +148,8 @@ export default function Summoner({ data }: InferGetServerSidePropsType<typeof ge
         ##Summoner
         <br />
         {/* <p>id: {data?.summonerData.id}</p>
-        <p>accountId: {data?.summonerData.accountId}</p> */}
-        <p>puuid: {data?.summonerData.puuid}</p>
+        <p>accountId: {data?.summonerData.accountId}</p>
+        <p>puuid: {data?.summonerData.puuid}</p> */}
         <p>name: {data?.summonerData.name}</p>
         <p>profileIconId: {data?.summonerData.profileIconId}</p>
         {/* <p>revisionDate: {data?.summonerData.revisionDate}</p> */}
