@@ -9,6 +9,7 @@ export interface IParticipantsInfoData {
   summonerId: string;
   summonerName: string;
   puuid: string;
+  teamId: number;
   win: boolean;
   kills: number;
   deaths: number;
@@ -32,6 +33,7 @@ export interface IParticipantsInfoData {
 
 export interface IReducedMatchData {
   matchId: string;
+  currentSummonerIndex: number;
   participantsId: string[];
   gameDuration: string;
   gameEndTimestamp: number;
@@ -50,14 +52,30 @@ export default function MatchList(props: IMatchListProps) {
     <ul>
       {props.data.map((match: IReducedMatchData) => (
         <li key={match.matchId}>
-            <p>matchId : {match.matchId}</p>
+            <p>matchId: {match.matchId}</p>
             {/* <p>{match.gameEndTimestamp}</p> */}
-            <p>gameDuration : {match.gameDuration}</p>
-            <p>participants &#123;</p>
-            {match.participantsInfo.map((pData: IParticipantsInfoData) => (
-              <p key={pData.summonerId}>{pData.summonerName}</p>
-            ))}
-            <p>&#125;</p>
+            <p>currentSummoner: {match.participantsInfo[match.currentSummonerIndex].championName}</p>
+            <p>{match.participantsInfo[match.currentSummonerIndex].win ? "win" : "lose"}</p>
+            <p>gameDuration: {match.gameDuration}</p>
+            <p>participants</p>
+            <p>#blue Team</p>
+            {match.participantsInfo.map((pData: IParticipantsInfoData) => {
+              if (pData.teamId === 100) {
+
+                return (
+                  <p key={pData.summonerId}>{pData.summonerName}</p>
+                );
+              }
+            })}
+            <p>#red Team</p>
+            {match.participantsInfo.map((pData: IParticipantsInfoData) => {
+              if (pData.teamId === 200) {
+
+                return (
+                  <p key={pData.summonerId}>{pData.summonerName}</p>
+                );
+              }
+            })}
             {/* <p>{match.gameMode}</p>
             <p>{match.gameType}</p> */}
             <br />

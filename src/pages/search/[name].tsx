@@ -3,6 +3,7 @@ import { InferGetServerSidePropsType } from 'next';
 import Head from 'next/head';
 import styled from 'styled-components';
 import MatchList, { IMatchData, IReducedMatchData, IParticipantsInfoData } from '@/components/matchList';
+import Profile, { IProfileData, IRankData } from '@/components/profile';
 
 interface ISummonerName {
     params: {name: string};
@@ -34,6 +35,27 @@ export async function getServerSideProps({ params }: ISummonerName) {
     );
 
     const rankData = await rankRes.json();
+
+    let reducedRankData = new Array<IRankData>();
+
+    rankData.map((fullData: any) => {
+      const rData: IRankData = {
+        leagueId: fullData.leagueId,
+        queueType: fullData.queueType,
+        tier: fullData.tier,
+        rank: fullData.rank,
+        leaguePoints: fullData.leaguePoints,
+        wins: fullData.wins,
+        losses: fullData.losses,
+      };
+
+      reducedRankData.push(rData);
+    });
+
+    const profileData: IProfileData = {
+      ...summonerData,
+      rank: reducedRankData,
+    };
 
     const matchListIdRes = await fetch(
       `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=10`,
@@ -70,64 +92,72 @@ export async function getServerSideProps({ params }: ISummonerName) {
     let matchListData = new Array<IReducedMatchData>();
 
     matchListFullData.map((match: IMatchData) => {
-      let participantsData = new Array<IParticipantsInfoData>();
+      if (match.info.gameMode === "CLASSIC") {
+        let participantsData = new Array<IParticipantsInfoData>();
+        let currentSummonerIndex = 0;
 
-      match.info.participants.map((participant: any) => {
-        const pInfoData: IParticipantsInfoData = {
-          summonerId: participant.summonerId,
-          summonerName: participant.summonerName,
-          puuid: participant.puuid,
-          win: participant.win,
-          kills: participant.kills,
-          deaths: participant.deaths,
-          assists: participant.assists,
-          champLevel: participant.champLevel,
-          championId: participant.championId,
-          championName: participant.championName,
-          goldEarned: participant.goldEarned,
-          totalDamageDealtToChampions: participant.totalDamageDealtToChampions,
-          totalDamageTaken: participant.totalDamageTaken,
-          visionScore: participant.visionScore,
-          sightWardsBoughtInGame: participant.sightWardsBoughtInGame,
-          item0: participant.item0,
-          item1: participant.item1,
-          item2: participant.item2,
-          item3: participant.item3,
-          item4: participant.item4,
-          item5: participant.item5,
-          item6: participant.item6,
+        match.info.participants.map((participant: any) => {
+          if (summonerData.name === participant.summonerName) {
+            currentSummonerIndex = participant.participantId - 1;
+          }
+
+          const pInfoData: IParticipantsInfoData = {
+            summonerId: participant.summonerId,
+            summonerName: participant.summonerName,
+            puuid: participant.puuid,
+            teamId: participant.teamId,
+            win: participant.win,
+            kills: participant.kills,
+            deaths: participant.deaths,
+            assists: participant.assists,
+            champLevel: participant.champLevel,
+            championId: participant.championId,
+            championName: participant.championName,
+            goldEarned: participant.goldEarned,
+            totalDamageDealtToChampions: participant.totalDamageDealtToChampions,
+            totalDamageTaken: participant.totalDamageTaken,
+            visionScore: participant.visionScore,
+            sightWardsBoughtInGame: participant.sightWardsBoughtInGame,
+            item0: participant.item0,
+            item1: participant.item1,
+            item2: participant.item2,
+            item3: participant.item3,
+            item4: participant.item4,
+            item5: participant.item5,
+            item6: participant.item6,
+          }
+
+          // console.log(pInfoData);
+
+          participantsData.push(pInfoData);
+        })
+
+        const gameDuration: number = match.info.gameDuration;
+        const gameDurationToString: string = String(Math.floor(gameDuration / 60)) 
+          + ":" 
+          + (((gameDuration % 60) < 10) ? 
+            ("0" + String(gameDuration % 60)) : (String(gameDuration % 60))
+        );
+
+        // const gameEndDate = new Date(match.info.gameEndTimestamp);
+
+        const matchData: IReducedMatchData = {
+          matchId: match.metadata.matchId,
+          currentSummonerIndex: currentSummonerIndex,
+          participantsId: match.metadata.participants,
+          gameDuration: gameDurationToString,
+          gameEndTimestamp: match.info.gameEndTimestamp,
+          gameMode: match.info.gameMode,
+          gameType: match.info.gameType,
+          participantsInfo: participantsData,
         }
 
-        // console.log(pInfoData);
-
-        participantsData.push(pInfoData);
-      })
-
-      const gameDuration: number = match.info.gameDuration;
-      const gameDurationToString: string = String(Math.floor(gameDuration / 60)) 
-        + ":" 
-        + (((gameDuration % 60) < 10) ? 
-          ("0" + String(gameDuration % 60)) : (String(gameDuration % 60))
-      );
-
-      // const gameEndDate = new Date(match.info.gameEndTimestamp);
-
-      const matchData: IReducedMatchData = {
-        matchId: match.metadata.matchId,
-        participantsId: match.metadata.participants,
-        gameDuration: gameDurationToString,
-        gameEndTimestamp: match.info.gameEndTimestamp,
-        gameMode: match.info.gameMode,
-        gameType: match.info.gameType,
-        participantsInfo: participantsData,
+        matchListData.push(matchData);
       }
-
-      matchListData.push(matchData);
     });
 
     const data = {
-      summonerData: summonerData,
-      rankData: rankData,
+      profileData: profileData,
       matchListData: matchListData,
     };
 
@@ -140,43 +170,13 @@ export default function Summoner({ data }: InferGetServerSidePropsType<typeof ge
     return (
       <Layout>
         <Head>
-          <title>Search Summoner</title>
+          <title>{data?.profileData.name} - Search Summoner</title>
           <meta name="description" content="Generated by create next app" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
         ##Summoner
-        <br />
-        {/* <p>id: {data?.summonerData.id}</p>
-        <p>accountId: {data?.summonerData.accountId}</p>
-        <p>puuid: {data?.summonerData.puuid}</p> */}
-        <p>name: {data?.summonerData.name}</p>
-        <p>profileIconId: {data?.summonerData.profileIconId}</p>
-        {/* <p>revisionDate: {data?.summonerData.revisionDate}</p> */}
-        <p>summonerLevel: {data?.summonerData.summonerLevel}</p>
-        <br />
-        ##Rank
-        <br />
-        {data?.rankData && data.rankData.map((
-          {summonerId, queueType, tier, rank, leaguePoints, wins, losses}: {
-            summonerId: string,
-            queueType: string,
-            tier: string,
-            rank: string
-            leaguePoints: number,
-            wins: number,
-            losses: number
-          }) => (
-            <div key={queueType}>
-              <p>queueType: {queueType}</p>
-              <p>tier: {tier}&nbsp;{rank}</p>
-              <p>leaguePoints: {leaguePoints}</p>
-              <p>wins: {wins}</p>
-              <p>losses: {losses}</p>
-              <br />
-            </div>
-          ))}
-        <br />
+        {data?.profileData && <Profile data={data.profileData}/>}
         ##Match
         {data?.matchListData && <MatchList data={data.matchListData}/>}
       </Layout>
