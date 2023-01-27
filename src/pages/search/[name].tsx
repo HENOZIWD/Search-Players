@@ -92,68 +92,67 @@ export async function getServerSideProps({ params }: ISummonerName) {
     let matchListData = new Array<IReducedMatchData>();
 
     matchListFullData.map((match: IMatchData) => {
-      if (match.info.gameMode === "CLASSIC") {
-        let participantsData = new Array<IParticipantsInfoData>();
-        let currentSummonerIndex = 0;
+      let participantsData = new Array<IParticipantsInfoData>();
+      let currentSummonerIndex = 0;
 
-        match.info.participants.map((participant: any) => {
-          if (summonerData.name === participant.summonerName) {
-            currentSummonerIndex = participant.participantId - 1;
-          }
-
-          const pInfoData: IParticipantsInfoData = {
-            summonerId: participant.summonerId,
-            summonerName: participant.summonerName,
-            puuid: participant.puuid,
-            teamId: participant.teamId,
-            win: participant.win,
-            kills: participant.kills,
-            deaths: participant.deaths,
-            assists: participant.assists,
-            champLevel: participant.champLevel,
-            championId: participant.championId,
-            championName: participant.championName,
-            goldEarned: participant.goldEarned,
-            totalDamageDealtToChampions: participant.totalDamageDealtToChampions,
-            totalDamageTaken: participant.totalDamageTaken,
-            visionScore: participant.visionScore,
-            sightWardsBoughtInGame: participant.sightWardsBoughtInGame,
-            item0: participant.item0,
-            item1: participant.item1,
-            item2: participant.item2,
-            item3: participant.item3,
-            item4: participant.item4,
-            item5: participant.item5,
-            item6: participant.item6,
-          }
-
-          // console.log(pInfoData);
-
-          participantsData.push(pInfoData);
-        })
-
-        const gameDuration: number = match.info.gameDuration;
-        const gameDurationToString: string = String(Math.floor(gameDuration / 60)) 
-          + ":" 
-          + (((gameDuration % 60) < 10) ? 
-            ("0" + String(gameDuration % 60)) : (String(gameDuration % 60))
-        );
-
-        // const gameEndDate = new Date(match.info.gameEndTimestamp);
-
-        const matchData: IReducedMatchData = {
-          matchId: match.metadata.matchId,
-          currentSummonerIndex: currentSummonerIndex,
-          participantsId: match.metadata.participants,
-          gameDuration: gameDurationToString,
-          gameEndTimestamp: match.info.gameEndTimestamp,
-          gameMode: match.info.gameMode,
-          gameType: match.info.gameType,
-          participantsInfo: participantsData,
+      match.info.participants.map((participant: any) => {
+        if (summonerData.name === participant.summonerName) {
+          currentSummonerIndex = participant.participantId - 1;
         }
 
-        matchListData.push(matchData);
+        const pInfoData: IParticipantsInfoData = {
+          summonerName: participant.summonerName,
+          teamId: participant.teamId,
+          win: participant.win,
+          kills: participant.kills,
+          deaths: participant.deaths,
+          assists: participant.assists,
+          champLevel: participant.champLevel,
+          championId: participant.championId,
+          championName: participant.championName,
+          goldEarned: participant.goldEarned,
+          totalDamageDealtToChampions: participant.totalDamageDealtToChampions,
+          totalDamageTaken: participant.totalDamageTaken,
+          totalMinionsKilled: participant.totalMinionsKilled,
+          visionScore: participant.visionScore,
+          sightWardsBoughtInGame: participant.sightWardsBoughtInGame,
+          items: [participant.item0,
+                  participant.item1,
+                  participant.item2,
+                  participant.item3,
+                  participant.item4,
+                  participant.item5,
+                  participant.item6],
+          summonerSpellIds: [participant.summoner1Id,
+                             participant.summoner2Id],
+        }
+
+        // console.log(pInfoData);
+
+        participantsData.push(pInfoData);
+      })
+
+      const gameDuration: number = match.info.gameDuration;
+      const gameDurationToString: string = String(Math.floor(gameDuration / 60)) 
+        + ":" 
+        + (((gameDuration % 60) < 10) ? 
+          ("0" + String(gameDuration % 60)) : (String(gameDuration % 60))
+      );
+
+      // const gameEndDate = new Date(match.info.gameEndTimestamp);
+
+      const matchData: IReducedMatchData = {
+        matchId: match.metadata.matchId,
+        currentSummonerIndex: currentSummonerIndex,
+        participantsId: match.metadata.participants,
+        gameDuration: gameDurationToString,
+        gameEndTimestamp: match.info.gameEndTimestamp,
+        gameMode: match.info.gameMode,
+        gameType: match.info.gameType,
+        participantsInfo: participantsData,
       }
+
+      matchListData.push(matchData);
     });
 
     const data = {
@@ -167,18 +166,20 @@ export async function getServerSideProps({ params }: ISummonerName) {
 
 export default function Summoner({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     
-    return (
-      <Layout>
-        <Head>
-          <title>{data?.profileData.name} - Search Summoner</title>
-          <meta name="description" content="Generated by create next app" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-        ##Summoner
-        {data?.profileData && <Profile data={data.profileData}/>}
-        ##Match
-        {data?.matchListData && <MatchList data={data.matchListData}/>}
-      </Layout>
-    );
+  const titleMessage = `${data?.profileData.name} - Search Summoner`
+
+  return (
+    <Layout>
+      <Head>
+        <title>{titleMessage}</title>
+        <meta name="description" content="Generated by create next app" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      ##Summoner
+      {data?.profileData && <Profile data={data.profileData}/>}
+      ##Match
+      {data?.matchListData && <MatchList data={data.matchListData}/>}
+    </Layout>
+  );
 }

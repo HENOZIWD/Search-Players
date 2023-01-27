@@ -4,9 +4,10 @@ import LayoutSearch from './layoutSearch';
 
 const HeaderLayout = styled.div`
   width: 100vw;
-  height: 40px;
+  height: 80px;
   display: flex;
   flex-direction: row;
+  padding: 1rem;
 `
 
 const Foo = styled.div`
