@@ -4,7 +4,26 @@ import styled from 'styled-components';
 
 const SearchForm = styled.form`
   display: flex;
+  justify-content: center;
   padding: 5px;
+  align-self: center;
+`
+
+const SearchBox = styled.input`
+  width: 500px;
+  height: 30px;
+  margin: 10px 5px;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid blue;
+`
+
+const SearchButton = styled.button`
+  width: 80px;
+  height: 30px;
+  margin: 10px 5px;
+  border-radius: 10px;
+  border: 1px solid blue;
 `
 
 export default function HomeSearch() {
@@ -30,11 +49,11 @@ export default function HomeSearch() {
 
   return (
     <SearchForm onSubmit={searchHandleSubmit}>
-      <input 
+      <SearchBox 
         value={summonerName} 
         onChange={searchHandleChange}
       />
-      <button type="submit">search</button>
+      <SearchButton type="submit">search</SearchButton>
     </SearchForm>
   );
 }

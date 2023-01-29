@@ -2,8 +2,14 @@ import Layout from '@/components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import Head from 'next/head';
 import styled from 'styled-components';
-import MatchList, { IMatchData, IReducedMatchData, IParticipantsInfoData } from '@/components/matchList';
+import MatchList from '@/components/matchList';
+import { IParticipantsInfoData, IReducedMatchData } from '@/components/match';
 import Profile, { IProfileData, IRankData } from '@/components/profile';
+
+interface IMatchData {
+  metadata: any;
+  info: any;
+}
 
 interface ISummonerName {
     params: {name: string};
@@ -58,7 +64,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
     };
 
     const matchListIdRes = await fetch(
-      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=10`,
+      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=5`,
       options
     );
 
@@ -115,7 +121,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
           totalDamageTaken: participant.totalDamageTaken,
           totalMinionsKilled: participant.totalMinionsKilled,
           visionScore: participant.visionScore,
-          sightWardsBoughtInGame: participant.sightWardsBoughtInGame,
+          visionWardsBoughtInGame: participant.visionWardsBoughtInGame,
           items: [participant.item0,
                   participant.item1,
                   participant.item2,
@@ -144,7 +150,6 @@ export async function getServerSideProps({ params }: ISummonerName) {
       const matchData: IReducedMatchData = {
         matchId: match.metadata.matchId,
         currentSummonerIndex: currentSummonerIndex,
-        participantsId: match.metadata.participants,
         gameDuration: gameDurationToString,
         gameEndTimestamp: match.info.gameEndTimestamp,
         gameMode: match.info.gameMode,
@@ -176,9 +181,7 @@ export default function Summoner({ data }: InferGetServerSidePropsType<typeof ge
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      ##Summoner
       {data?.profileData && <Profile data={data.profileData}/>}
-      ##Match
       {data?.matchListData && <MatchList data={data.matchListData}/>}
     </Layout>
   );

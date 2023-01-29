@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styled from 'styled-components';
 
 export interface IRankData {
@@ -42,9 +43,14 @@ export default function Profile(props: IProfileProps) {
   return (
     <ProfileContainer>
       <ProfileItem>
-        <p>summonerName: {props.data.name}</p>
-        <p>summonerLevel: {props.data.summonerLevel}</p>
-        <p>profileIconId: {props.data.profileIconId}</p>
+        <Image
+          src={`/image/profileicon/${props.data.profileIconId}.png`}
+          alt="err"
+          width={150}
+          height={150}
+        />
+        <p>{props.data.name}</p>
+        <p>{props.data.summonerLevel}</p>
       </ProfileItem>
       {props.data.rank.map((rankData: IRankData) => (
         <ProfileItem key={rankData.queueType}>
