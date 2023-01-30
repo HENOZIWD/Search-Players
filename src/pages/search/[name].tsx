@@ -64,7 +64,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
     };
 
     const matchListIdRes = await fetch(
-      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=5`,
+      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=10`,
       options
     );
 
@@ -131,6 +131,27 @@ export async function getServerSideProps({ params }: ISummonerName) {
                   participant.item6],
           summonerSpellIds: [participant.summoner1Id,
                              participant.summoner2Id],
+          perks: {
+            statPerks: {
+              defense: participant.perks.statPerks.defense,
+              flex: participant.perks.statPerks.flex,
+              offense: participant.perks.statPerks.offense
+            },
+            styles: {
+              primaryStyle: {
+                selections: [participant.perks.styles[0].selections[0].perk,
+                             participant.perks.styles[0].selections[1].perk,
+                             participant.perks.styles[0].selections[2].perk,
+                             participant.perks.styles[0].selections[3].perk],
+                style: participant.perks.styles[0].style
+              },
+              subStyle: {
+                selections: [participant.perks.styles[1].selections[0].perk,
+                             participant.perks.styles[1].selections[1].perk,],
+                style: participant.perks.styles[1].style
+              }
+            },
+          }
         }
 
         // console.log(pInfoData);
