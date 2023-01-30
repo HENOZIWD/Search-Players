@@ -11,6 +11,8 @@ const MatchListContainer = styled.ul`
   display: flex;
   flex-direction: column;
   padding: 0.5rem;
+  width: 100vw;
+  align-items: center;
 `
 
 export default function MatchList(props: IMatchListProps) {

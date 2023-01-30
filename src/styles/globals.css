@@ -105,3 +105,12 @@ a {
     color-scheme: dark;
   }
 }
+
+th {
+  text-align: center;
+  padding: 0px 3rem 0px;
+}
+
+td {
+  text-align: center;
+}
