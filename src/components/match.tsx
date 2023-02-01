@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export interface IPerksData {
+interface IPerksData {
   statPerks: {
     defense: number;
     flex: number;
@@ -62,6 +62,7 @@ const MatchListItem = styled.li`
   flex-direction: column;
   margin: 1rem;
   list-style: none;
+  width: 80rem;
   /* border-radius: 12px; */
 `
 
@@ -137,6 +138,7 @@ const DetailButton = styled.button`
   &:hover {
     background-color: lightgrey;
   }
+  width: 2rem;
 `
 
 const MatchThumbnail = styled.div`

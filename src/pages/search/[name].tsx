@@ -6,7 +6,7 @@ import MatchList from '@/components/matchList';
 import { IParticipantsInfoData, IReducedMatchData } from '@/components/match';
 import Profile, { IProfileData, IRankData } from '@/components/profile';
 
-interface IMatchData {
+export interface IMatchData {
   metadata: any;
   info: any;
 }
@@ -22,7 +22,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
     }
 
     const summonerRes = await fetch(
-      `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(params.name)}`,
+      `https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${params.name}`,
       options
     );
 
@@ -36,7 +36,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
     const summonerData = await summonerRes.json();
 
     const rankRes = await fetch(
-      `https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${encodeURI(summonerData.id)}`,
+      `https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerData.id}`,
       options
     );
 
@@ -64,7 +64,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
     };
 
     const matchListIdRes = await fetch(
-      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${encodeURI(summonerData.puuid)}/ids?start=0&count=10`,
+      `https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/${summonerData.puuid}/ids?start=0&count=10`,
       options
     );
 
@@ -83,7 +83,7 @@ export async function getServerSideProps({ params }: ISummonerName) {
     const matchListFullData: IMatchData[] = await Promise.all(
       matchListIdData.map(async (matchId: string): Promise<IMatchData> => {
         const matchDataRes = await fetch(
-          `https://asia.api.riotgames.com/lol/match/v5/matches/${encodeURI(matchId)}`,
+          `https://asia.api.riotgames.com/lol/match/v5/matches/${matchId}`,
           options
         );
 
@@ -184,6 +184,8 @@ export async function getServerSideProps({ params }: ISummonerName) {
     const data = {
       profileData: profileData,
       matchListData: matchListData,
+      puuid: summonerData.puuid,
+      summonerName: summonerData.name,
     };
 
     
@@ -203,7 +205,10 @@ export default function Summoner({ data }: InferGetServerSidePropsType<typeof ge
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {data?.profileData && <Profile data={data.profileData}/>}
-      {data?.matchListData && <MatchList data={data.matchListData}/>}
+      {data?.matchListData && <MatchList 
+                                data={data.matchListData} 
+                                puuid={data.puuid} 
+                                summonerName={data.summonerName}/>}
     </Layout>
   );
 }

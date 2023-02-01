@@ -1,10 +1,11 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import Match, { IParticipantsInfoData, IReducedMatchData } from './match';
 
 interface IMatchListProps {
   data: IReducedMatchData[];
+  puuid: string;
+  summonerName: string;
 }
 
 const MatchListContainer = styled.ul`
@@ -15,11 +16,38 @@ const MatchListContainer = styled.ul`
   align-items: center;
 `
 
+const MoreButton = styled.button`
+  width: 50vw;
+  padding: 1rem;
+  margin: 0.5rem;
+  border: 1px solid black;
+  border-radius: 0.8rem;
+  &:hover {
+    background-color: lightgrey;
+  }
+`
+
 export default function MatchList(props: IMatchListProps) {
+
+  const [matchData, setMatchData] = useState<IReducedMatchData[]>(props.data);
+  const [currentIdx, setCurrentIdx] = useState<number>(10);
+
+  const onMoreButtonClick = async (event: React.MouseEvent) => {
+    event.preventDefault();
+
+    const moreRes = await fetch(`/api/match/${props.puuid}?name=${props.summonerName}&start=${currentIdx}`);
+    setCurrentIdx(currentIdx + 10);
+    const moreData = await moreRes.json();
+
+    setMatchData([
+      ...matchData,
+      ...moreData
+    ]);
+  }
 
   return (
     <MatchListContainer>
-      {props.data.map((match: IReducedMatchData) => {
+      {matchData.map((match: IReducedMatchData) => {
 
         const player: IParticipantsInfoData = match.participantsInfo[match.currentSummonerIndex];
 
@@ -31,6 +59,7 @@ export default function MatchList(props: IMatchListProps) {
           />
         )}
       )}
+      <MoreButton onClick={onMoreButtonClick}>More</MoreButton>
     </MatchListContainer>
   );
 }
