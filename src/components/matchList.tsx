@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Match, { IParticipantsInfoData, IReducedMatchData } from './match';
 
@@ -31,6 +31,10 @@ export default function MatchList(props: IMatchListProps) {
 
   const [matchData, setMatchData] = useState<IReducedMatchData[]>(props.data);
   const [currentIdx, setCurrentIdx] = useState<number>(10);
+
+  useEffect(() => {
+    setMatchData(props.data);
+  }, [props])
 
   const onMoreButtonClick = async (event: React.MouseEvent) => {
     event.preventDefault();
