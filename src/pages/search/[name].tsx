@@ -100,10 +100,20 @@ export async function getServerSideProps({ params }: ISummonerName) {
     matchListFullData.map((match: IMatchData) => {
       let participantsData = new Array<IParticipantsInfoData>();
       let currentSummonerIndex = 0;
+      
+      let highestDamageDealt = 0;
+      let highestDamageTaken = 0;
 
       match.info.participants.map((participant: any) => {
         if (summonerData.name === participant.summonerName) {
           currentSummonerIndex = participant.participantId - 1;
+        }
+
+        if (highestDamageDealt < participant.totalDamageDealtToChampions) {
+          highestDamageDealt = participant.totalDamageDealtToChampions;
+        }
+        if (highestDamageTaken < participant.totalDamageTaken) {
+          highestDamageTaken = participant.totalDamageTaken;
         }
 
         const pInfoData: IParticipantsInfoData = {
@@ -122,6 +132,8 @@ export async function getServerSideProps({ params }: ISummonerName) {
           totalMinionsKilled: participant.totalMinionsKilled,
           visionScore: participant.visionScore,
           visionWardsBoughtInGame: participant.visionWardsBoughtInGame,
+          wardsKilled: participant.wardsKilled,
+          wardsPlaced: participant.wardsPlaced,
           items: [participant.item0,
                   participant.item1,
                   participant.item2,
@@ -161,10 +173,10 @@ export async function getServerSideProps({ params }: ISummonerName) {
 
       const gameDuration: number = match.info.gameDuration;
       const gameDurationToString: string = String(Math.floor(gameDuration / 60)) 
-        + ":" 
+        + "분 " 
         + (((gameDuration % 60) < 10) ? 
-          ("0" + String(gameDuration % 60)) : (String(gameDuration % 60))
-      );
+          ("0" + String(gameDuration % 60)) : (String(gameDuration % 60)))
+        + "초";
 
       // const gameEndDate = new Date(match.info.gameEndTimestamp);
 
@@ -176,6 +188,9 @@ export async function getServerSideProps({ params }: ISummonerName) {
         gameMode: match.info.gameMode,
         gameType: match.info.gameType,
         participantsInfo: participantsData,
+        queueId: match.info.queueId,
+        highestDamageDealt: highestDamageDealt,
+        highestDamageTaken: highestDamageTaken,
       }
 
       matchListData.push(matchData);
