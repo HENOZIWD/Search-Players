@@ -37,6 +37,8 @@ export interface IParticipantsInfoData {
   totalMinionsKilled: number;
   visionScore: number;
   visionWardsBoughtInGame: number;
+  wardsKilled: number;
+  wardsPlaced: number;
   items: number[];
   summonerSpellIds: number[];
   perks: IPerksData;
@@ -50,6 +52,9 @@ export interface IReducedMatchData {
   gameMode: string;
   gameType: string;
   participantsInfo: IParticipantsInfoData[];
+  queueId: number;
+  highestDamageDealt: number;
+  highestDamageTaken: number;
 }
 
 interface IMatchProps {
@@ -124,12 +129,15 @@ const SummonerItemBox = styled.div`
 const DetailBox = styled.div`
   align-self: center;
   padding: 20px;
+  text-align: center;
+  font-size: 0.9rem;
 `
 
 const TeamList = styled.ul`
   margin: 0.5rem;
   display: flex;
   flex-direction: column;
+  font-size: 0.85rem;
 `
 
 const DetailButton = styled.button`
@@ -165,11 +173,30 @@ const DetailSummonerBox = styled.tr`
   height: fit-content;
 `
 
+const DamageBox = styled.div<{ damagePercent: number, color: string }>`
+  border: 0.05rem solid black;
+  border-radius: 0.35rem;
+  margin: 0.1rem;
+  background-image: linear-gradient(to right, ${props => props.color} 0%,
+                                              ${props => props.color} ${props => props.damagePercent}%,
+                                              white ${props => props.damagePercent}%, 
+                                              white ${props => 100 - props.damagePercent}%);
+`
+
 export default function Match(props: IMatchProps) {
 
   const [detailStatus, setDetailStatus] = useState<boolean>(false);
 
   const date: string = new Date(props.match.gameEndTimestamp).toLocaleString();
+  const gameMode = props.match.gameMode === "CLASSIC" ? "소환사의 협곡" :
+                   props.match.gameMode === "ARAM" ? "칼바람 나락" :
+                   props.match.gameMode;
+
+  const queueType = props.match.queueId === 450 ? "무작위 총력전" :
+                    props.match.queueId === 440 ? "자유 랭크 게임" :
+                    props.match.queueId === 420 ? "솔로 랭크 게임" :
+                    props.match.queueId === 900 ? "URF" :
+                    props.match.queueId;
 
   const onDetailClick = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -182,9 +209,10 @@ export default function Match(props: IMatchProps) {
         <MatchResultColorBox
           win={props.player.win} />
         <MatchInfo>
-          <p>matchId: {props.match.matchId}</p>
-          <p>{props.match.gameMode}</p>
-          <p>{props.player.win ? "win" : "lose"}</p>
+          {/* <p>{props.match.matchId}</p>
+          <p>{gameMode}</p> */}
+          <p>{queueType}</p>
+          <p>{props.player.win ? "승리" : "패배"}</p>
           <p>{props.match.gameDuration}</p>
           <p>{date}</p>
         </MatchInfo>
@@ -225,6 +253,9 @@ export default function Match(props: IMatchProps) {
             />
           </SummonerSpellPerkInfoBox>
         </SummonerInfoBox>
+        <DetailBox>
+          {props.player.kills}&nbsp;/&nbsp;{props.player.deaths}&nbsp;/&nbsp;{props.player.assists}
+        </DetailBox>
         <SummonerItemBox>
           {props.player.items.map((id: number, index: number) => (
             <Image 
@@ -237,12 +268,16 @@ export default function Match(props: IMatchProps) {
             />
           ))}
         </SummonerItemBox>
-        <DetailBox>
-          K/D/A: {props.player.kills}&nbsp;/&nbsp;{props.player.deaths}&nbsp;/&nbsp;{props.player.assists}
-          <br />level: {props.player.champLevel}
-          <br />totalDamageDealt: {props.player.totalDamageDealtToChampions}
-          <br />totalDamageTaken: {props.player.totalDamageTaken}
-          <br />cs: {props.player.totalMinionsKilled}
+        <DetailBox>          
+          CS&nbsp;{props.player.totalMinionsKilled}
+          {props.match.gameMode !== "CLASSIC" ? null : 
+            <>
+            <br />
+            시야&nbsp;점수&nbsp;{props.player.visionScore}
+            <br />
+            제어&nbsp;와드&nbsp;{props.player.visionWardsBoughtInGame}
+            </>
+          }
         </DetailBox>
         <Foo />
         <TeamList>
@@ -292,78 +327,79 @@ export default function Match(props: IMatchProps) {
 
             if (participant.teamId === 100) {
 
-            return (
-              <DetailSummonerBox key={participant.summonerName}>
-                <td>
-                  <Image
-                    src={`/image/champion/${participant.championName}.png`}
-                    alt="err"
-                    width={40}
-                    height={40}
-                  />
-                  <ChampionLevelBox size={0.9}>{participant.champLevel}</ChampionLevelBox>
-                </td>
-                <td>
-                  <SummonerSpellPerkInfoBox>
-                    {participant.summonerSpellIds.map((id: number) => (
-                      <Image
-                        key={id}
-                        src={`/image/summonerSpell/${id}.png`}
-                        alt="err"
-                        width={20}
-                        height={20}
-                      />
-                    ))}
-                  </SummonerSpellPerkInfoBox>
-                </td>
-                <td>
-                  <SummonerSpellPerkInfoBox>
+              return (
+                <DetailSummonerBox key={participant.summonerName}>
+                  <td>
                     <Image
-                      src={`/image/perk/${participant.perks.styles.primaryStyle.style}/${participant.perks.styles.primaryStyle.selections[0]}.png`} 
+                      src={`/image/champion/${participant.championName}.png`}
                       alt="err"
-                      width={18}
-                      height={18}
-                      style={{ margin: 2, marginBottom: 1, backgroundColor: 'black', borderRadius: '9999px' }}
+                      width={40}
+                      height={40}
                     />
-                    <Image
-                      src={`/image/perk/${participant.perks.styles.subStyle.style}.png`} 
-                      alt="err"
-                      width={18}
-                      height={18}
-                      style={{ margin: 2, marginBottom: 1, padding: 2 }}
-                    />
-                  </SummonerSpellPerkInfoBox>
-                </td>
-                <td>
-                  <Link 
-                    href={`/search/${participant.summonerName}`} 
-                    key={participant.summonerName}
-                  >
-                    {participant.summonerName}
-                  </Link>
-                </td>
-                <td>{participant.kills}&nbsp;/&nbsp;{participant.deaths}&nbsp;/&nbsp;{participant.assists}</td>
-                <td>{participant.totalMinionsKilled}</td>
-                <td>
-                  damageDealt:&nbsp;{participant.totalDamageDealtToChampions}
-                  &nbsp;damageTaken:&nbsp;{participant.totalDamageTaken}
-                </td>
-                {props.match.gameMode === "CLASSIC" ? (<td>visionScore:&nbsp;{participant.visionScore}
-                  &nbsp;visionWardBought:&nbsp;{participant.visionWardsBoughtInGame}</td>) : null}
-                <td>
-                  <SummonerItemBox>
-                    {participant.items.map((id: number, index: number) => (
+                    <ChampionLevelBox size={0.9}>{participant.champLevel}</ChampionLevelBox>
+                  </td>
+                  <td>
+                    <SummonerSpellPerkInfoBox>
+                      {participant.summonerSpellIds.map((id: number) => (
+                        <Image
+                          key={id}
+                          src={`/image/summonerSpell/${id}.png`}
+                          alt="err"
+                          width={20}
+                          height={20}
+                        />
+                      ))}
+                    </SummonerSpellPerkInfoBox>
+                  </td>
+                  <td>
+                    <SummonerSpellPerkInfoBox>
                       <Image
-                        key={index}
-                        src={`/image/item/${id}.png`}
+                        src={`/image/perk/${participant.perks.styles.primaryStyle.style}/${participant.perks.styles.primaryStyle.selections[0]}.png`} 
                         alt="err"
-                        width={25}
-                        height={25}
+                        width={18}
+                        height={18}
+                        style={{ margin: 2, marginBottom: 1, backgroundColor: 'black', borderRadius: '9999px' }}
                       />
-                    ))}
-                  </SummonerItemBox>
-                </td>
-              </DetailSummonerBox>
+                      <Image
+                        src={`/image/perk/${participant.perks.styles.subStyle.style}.png`} 
+                        alt="err"
+                        width={18}
+                        height={18}
+                        style={{ margin: 2, marginBottom: 1, padding: 2 }}
+                      />
+                    </SummonerSpellPerkInfoBox>
+                  </td>
+                  <td>
+                    <Link 
+                      href={`/search/${participant.summonerName}`} 
+                      key={participant.summonerName}
+                    >
+                      {participant.summonerName}
+                    </Link>
+                  </td>
+                  <td>{participant.kills}&nbsp;/&nbsp;{participant.deaths}&nbsp;/&nbsp;{participant.assists}</td>
+                  <td>{participant.totalMinionsKilled}</td>
+                  <td>
+                    <DamageBox damagePercent={Math.floor(participant.totalDamageDealtToChampions*100/props.match.highestDamageDealt)} color={'#ff7b7b'}>{participant.totalDamageDealtToChampions}</DamageBox>
+                    <DamageBox damagePercent={Math.floor(participant.totalDamageTaken*100/props.match.highestDamageTaken)} color={'#9f9f9f'}>{participant.totalDamageTaken}</DamageBox>
+                  </td>
+                  {props.match.gameMode === "CLASSIC" ? (<td style={{ fontSize: '0.75rem' }}>시야 점수:&nbsp;{participant.visionScore}
+                    &nbsp;제어 와드 구매:&nbsp;{participant.visionWardsBoughtInGame}</td>) : null}
+                  <td>
+                    <SummonerItemBox>
+                      {participant.items.map((id: number, index: number) => (
+                        <Image
+                          key={index}
+                          src={`/image/item/${id}.png`}
+                          alt="err"
+                          width={25}
+                          height={25}
+                          style={{ margin: 1 }}
+                        />
+                      ))}
+                    </SummonerItemBox>
+                  </td>
+                </DetailSummonerBox>
           )}})}
         </tbody>
       </MatchDetail>
@@ -376,80 +412,83 @@ export default function Match(props: IMatchProps) {
         <tbody>
           {props.match.participantsInfo.map((participant: IParticipantsInfoData) => {
 
+            // const damageDealtPercent = Math.floor()
+
             if (participant.teamId === 200) {
 
-            return (
-              <DetailSummonerBox key={participant.summonerName}>
-                <td>
-                  <Image
-                    src={`/image/champion/${participant.championName}.png`}
-                    alt="err"
-                    width={40}
-                    height={40}
-                  />
-                  <ChampionLevelBox size={0.9}>{participant.champLevel}</ChampionLevelBox>
-                </td>
-                <td>
-                  <SummonerSpellPerkInfoBox>
-                    {participant.summonerSpellIds.map((id: number) => (
-                      <Image
-                        key={id}
-                        src={`/image/summonerSpell/${id}.png`}
-                        alt="err"
-                        width={20}
-                        height={20}
-                      />
-                    ))}
-                  </SummonerSpellPerkInfoBox>
-                </td>
-                <td>
-                  <SummonerSpellPerkInfoBox>
+              return (
+                <DetailSummonerBox key={participant.summonerName}>
+                  <td>
                     <Image
-                      src={`/image/perk/${participant.perks.styles.primaryStyle.style}/${participant.perks.styles.primaryStyle.selections[0]}.png`} 
+                      src={`/image/champion/${participant.championName}.png`}
                       alt="err"
-                      width={18}
-                      height={18}
-                      style={{ margin: 2, marginBottom: 1, backgroundColor: 'black', borderRadius: '9999px' }}
+                      width={40}
+                      height={40}
                     />
-                    <Image
-                      src={`/image/perk/${participant.perks.styles.subStyle.style}.png`} 
-                      alt="err"
-                      width={18}
-                      height={18}
-                      style={{ margin: 2, marginBottom: 1, padding: 2 }}
-                    />
-                  </SummonerSpellPerkInfoBox>
-                </td>
-                <td>
-                  <Link 
-                    href={`/search/${participant.summonerName}`} 
-                    key={participant.summonerName}
-                  >
-                    {participant.summonerName}
-                  </Link>
-                </td>
-                <td>{participant.kills}&nbsp;/&nbsp;{participant.deaths}&nbsp;/&nbsp;{participant.assists}</td>
-                <td>{participant.totalMinionsKilled}</td>
-                <td>
-                  damageDealt:&nbsp;{participant.totalDamageDealtToChampions}
-                  &nbsp;damageTaken:&nbsp;{participant.totalDamageTaken}
-                </td>
-                {props.match.gameMode === "CLASSIC" ? (<td>visionScore:&nbsp;{participant.visionScore}
-                  &nbsp;visionWardBought:&nbsp;{participant.visionWardsBoughtInGame}</td>) : null}
-                <td>
-                  <SummonerItemBox>
-                    {participant.items.map((id: number, index: number) => (
+                    <ChampionLevelBox size={0.9}>{participant.champLevel}</ChampionLevelBox>
+                  </td>
+                  <td>
+                    <SummonerSpellPerkInfoBox>
+                      {participant.summonerSpellIds.map((id: number) => (
+                        <Image
+                          key={id}
+                          src={`/image/summonerSpell/${id}.png`}
+                          alt="err"
+                          width={20}
+                          height={20}
+                        />
+                      ))}
+                    </SummonerSpellPerkInfoBox>
+                  </td>
+                  <td>
+                    <SummonerSpellPerkInfoBox>
                       <Image
-                        key={index}
-                        src={`/image/item/${id}.png`}
+                        src={`/image/perk/${participant.perks.styles.primaryStyle.style}/${participant.perks.styles.primaryStyle.selections[0]}.png`} 
                         alt="err"
-                        width={25}
-                        height={25}
+                        width={18}
+                        height={18}
+                        style={{ margin: 2, marginBottom: 1, backgroundColor: 'black', borderRadius: '9999px' }}
                       />
-                    ))}
-                  </SummonerItemBox>
-                </td>
-              </DetailSummonerBox>
+                      <Image
+                        src={`/image/perk/${participant.perks.styles.subStyle.style}.png`} 
+                        alt="err"
+                        width={18}
+                        height={18}
+                        style={{ margin: 2, marginBottom: 1, padding: 2 }}
+                      />
+                    </SummonerSpellPerkInfoBox>
+                  </td>
+                  <td>
+                    <Link 
+                      href={`/search/${participant.summonerName}`} 
+                      key={participant.summonerName}
+                    >
+                      {participant.summonerName}
+                    </Link>
+                  </td>
+                  <td>{participant.kills}&nbsp;/&nbsp;{participant.deaths}&nbsp;/&nbsp;{participant.assists}</td>
+                  <td>{participant.totalMinionsKilled}</td>
+                  <td>
+                  <DamageBox damagePercent={Math.floor(participant.totalDamageDealtToChampions*100/props.match.highestDamageDealt)} color={'#ff7b7b'}>{participant.totalDamageDealtToChampions}</DamageBox>
+                    <DamageBox damagePercent={Math.floor(participant.totalDamageTaken*100/props.match.highestDamageTaken)} color={'#9f9f9f'}>{participant.totalDamageTaken}</DamageBox>
+                  </td>
+                  {props.match.gameMode === "CLASSIC" ? (<td style={{ fontSize: '0.75rem' }}>시야 점수:&nbsp;{participant.visionScore}
+                    &nbsp;제어 와드 구매:&nbsp;{participant.visionWardsBoughtInGame}</td>) : null}
+                  <td>
+                    <SummonerItemBox>
+                      {participant.items.map((id: number, index: number) => (
+                        <Image
+                          key={index}
+                          src={`/image/item/${id}.png`}
+                          alt="err"
+                          width={25}
+                          height={25}
+                          style={{ margin: 1 }}
+                        />
+                      ))}
+                    </SummonerItemBox>
+                  </td>
+                </DetailSummonerBox>
           )}})}
         </tbody>
       </MatchDetail>

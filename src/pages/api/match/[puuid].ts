@@ -36,9 +36,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let participantsData = new Array<IParticipantsInfoData>();
     let currentSummonerIndex = 0;
 
+    let highestDamageDealt = 0;
+    let highestDamageTaken = 0;
+
     match.info.participants.map((participant: any) => {
       if (req.query.name === participant.summonerName) {
         currentSummonerIndex = participant.participantId - 1;
+      }
+
+      if (highestDamageDealt < participant.totalDamageDealtToChampions) {
+        highestDamageDealt = participant.totalDamageDealtToChampions;
+      }
+      if (highestDamageTaken < participant.totalDamageTaken) {
+        highestDamageTaken = participant.totalDamageTaken;
       }
 
       const pInfoData: IParticipantsInfoData = {
@@ -57,6 +67,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         totalMinionsKilled: participant.totalMinionsKilled,
         visionScore: participant.visionScore,
         visionWardsBoughtInGame: participant.visionWardsBoughtInGame,
+        wardsKilled: participant.wardsKilled,
+        wardsPlaced: participant.wardsPlaced,
         items: [participant.item0,
                 participant.item1,
                 participant.item2,
@@ -111,6 +123,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       gameMode: match.info.gameMode,
       gameType: match.info.gameType,
       participantsInfo: participantsData,
+      queueId: match.info.queueId,
+      highestDamageDealt: highestDamageDealt,
+      highestDamageTaken: highestDamageTaken,
     }
 
     matchListData.push(matchData);

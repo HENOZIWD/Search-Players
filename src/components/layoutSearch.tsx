@@ -4,7 +4,6 @@ import styled from 'styled-components';
 
 const SearchForm = styled.form`
   display: flex;
-  padding: 5px;
 `
 
 export default function LayoutSearch() {

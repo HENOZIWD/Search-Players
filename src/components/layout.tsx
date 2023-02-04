@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import LayoutSearch from './layoutSearch';
 
 const HeaderLayout = styled.div`
-  width: 100vw;
+  /* width: 100vw; */
   height: 80px;
   display: flex;
   flex-direction: row;
