@@ -33,7 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let matchListData = new Array<IReducedMatchData>();
 
   matchListFullData.map((match: IMatchData) => {
-    let participantsData = new Array<IParticipantsInfoData>();
+    let blueTeamParticipantsData = new Array<IParticipantsInfoData>();
+    let redTeamParticipantsData = new Array<IParticipantsInfoData>();
     let currentSummonerIndex = 0;
 
     let highestDamageDealt = 0;
@@ -103,7 +104,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // console.log(pInfoData);
 
-      participantsData.push(pInfoData);
+      if (participant.teamId === 100) {
+        blueTeamParticipantsData.push(pInfoData);
+      }
+      else {
+        redTeamParticipantsData.push(pInfoData);
+      }
     })
 
     const gameDuration: number = match.info.gameDuration;
@@ -122,7 +128,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       gameEndTimestamp: match.info.gameEndTimestamp,
       gameMode: match.info.gameMode,
       gameType: match.info.gameType,
-      participantsInfo: participantsData,
+      participantsInfo: [blueTeamParticipantsData,
+                         redTeamParticipantsData],
       queueId: match.info.queueId,
       highestDamageDealt: highestDamageDealt,
       highestDamageTaken: highestDamageTaken,

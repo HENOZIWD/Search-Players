@@ -53,7 +53,7 @@ export default function MatchList(props: IMatchListProps) {
     <MatchListContainer>
       {matchData.map((match: IReducedMatchData) => {
 
-        const player: IParticipantsInfoData = match.participantsInfo[match.currentSummonerIndex];
+        const player: IParticipantsInfoData = match.participantsInfo[Math.floor(match.currentSummonerIndex / 5)][match.currentSummonerIndex % 5];
 
         return (
           <Match 
