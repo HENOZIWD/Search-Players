@@ -51,7 +51,7 @@ export interface IReducedMatchData {
   gameEndTimestamp: number;
   gameMode: string;
   gameType: string;
-  participantsInfo: IParticipantsInfoData[];
+  participantsInfo: IParticipantsInfoData[][];
   queueId: number;
   highestDamageDealt: number;
   highestDamageTaken: number;
@@ -155,6 +155,23 @@ const MatchThumbnail = styled.div`
   list-style: none;
 `
 
+const DetailMenu = styled.ul`
+  display: flex;
+  list-style: none;
+  flex-direction: row;
+  align-self: center;
+  padding: 0.5rem;
+`
+
+const DetailTab = styled.li`
+  padding: 0.8rem 2rem;
+
+  &:hover {
+    background-color: lightgray;
+    cursor: pointer;
+  }
+`
+
 const MatchDetail = styled.table`
   margin-top: 0.5rem;
   align-self: center;
@@ -182,6 +199,7 @@ const DamageBox = styled.div<{ damagePercent: number, color: string }>`
                                               white ${props => props.damagePercent}%, 
                                               white ${props => 100 - props.damagePercent}%);
 `
+
 
 export default function Match(props: IMatchProps) {
 
@@ -280,54 +298,39 @@ export default function Match(props: IMatchProps) {
           }
         </DetailBox>
         <Foo />
-        <TeamList>
-          <p>#blue Team</p>
-          {props.match.participantsInfo.map((pData: IParticipantsInfoData) => {
-            if (pData.teamId === 100) {
-
-              return (
-                <Link 
-                  href={`/search/${pData.summonerName}`} 
-                  key={pData.summonerName}
-                >
-                  {pData.summonerName}
-                </Link>
-              );
-            }
-          })}
-        </TeamList>
-        <TeamList>
-          <p>#red Team</p>
-          {props.match.participantsInfo.map((pData: IParticipantsInfoData) => {
-            if (pData.teamId === 200) {
-
-              return (
-                <Link 
-                  href={`/search/${pData.summonerName}`} 
-                  key={pData.summonerName}
-                >
-                  {pData.summonerName}
-                </Link>
-              );
-            }
-          })}
-        </TeamList>
+        {props.match.participantsInfo.map((team: IParticipantsInfoData[], teamIndex: number) => (
+          <TeamList key={teamIndex}>
+            <p style={{ backgroundColor: 'lightgray', alignSelf: 'center', padding: '0.05rem 0.15rem' }}>{teamIndex === 0 ? "Blue Team" : "Red Team"}</p>
+            {team.map((participant: IParticipantsInfoData) => (
+              <Link
+                key={participant.summonerName}
+                href={`/search/${participant.summonerName}`}
+              >
+                {participant.summonerName}
+              </Link>
+            ))}
+          </TeamList>
+        ))}
         <DetailButton onClick={onDetailClick}>{detailStatus ? "Less" : "More"}</DetailButton>
       </MatchThumbnail>
       {!detailStatus ? null : 
       <>
-      <MatchDetail>
-        <thead>
-          <DetailSummonerBox>
-            <th colSpan={4}>Blue Team</th><th>K/D/A</th><th>CS</th><th>Damage</th>{props.match.gameMode === "CLASSIC" ? (<th>Vision</th>) : null}<th>Items</th>
-          </DetailSummonerBox>
-        </thead>
-        <tbody>
-          {props.match.participantsInfo.map((participant: IParticipantsInfoData) => {
 
-            if (participant.teamId === 100) {
+      {/* <DetailMenu>
+        <DetailTab>종합</DetailTab>
+        <DetailTab>빌드</DetailTab>
+      </DetailMenu> */}
+      {props.match.participantsInfo.map((team: IParticipantsInfoData[], teamIndex: number) => {
 
-              return (
+        return (
+          <MatchDetail key={teamIndex}>
+            <thead>
+              <DetailSummonerBox>
+                <th colSpan={4}>{teamIndex === 0 ? "Blue Team" : "Red Team"}</th><th>K/D/A</th><th>CS</th><th>Damage</th>{props.match.gameMode === "CLASSIC" ? (<th>Vision</th>) : null}<th>Items</th>
+              </DetailSummonerBox>
+            </thead>
+            <tbody>
+              {team.map((participant: IParticipantsInfoData) => (
                 <DetailSummonerBox key={participant.summonerName}>
                   <td>
                     <Image
@@ -400,98 +403,12 @@ export default function Match(props: IMatchProps) {
                     </SummonerItemBox>
                   </td>
                 </DetailSummonerBox>
-          )}})}
-        </tbody>
-      </MatchDetail>
-      <MatchDetail>
-        <thead>
-          <DetailSummonerBox>
-            <th colSpan={4}>Red Team</th><th>K/D/A</th><th>CS</th><th>Damage</th>{props.match.gameMode === "CLASSIC" ? (<th>Vision</th>) : null}<th>Items</th>
-          </DetailSummonerBox>
-        </thead>
-        <tbody>
-          {props.match.participantsInfo.map((participant: IParticipantsInfoData) => {
+              ))}
+            </tbody>
+          </MatchDetail>
+        )
+      })}
 
-            // const damageDealtPercent = Math.floor()
-
-            if (participant.teamId === 200) {
-
-              return (
-                <DetailSummonerBox key={participant.summonerName}>
-                  <td>
-                    <Image
-                      src={`/image/champion/${participant.championName}.png`}
-                      alt="err"
-                      width={40}
-                      height={40}
-                    />
-                    <ChampionLevelBox size={0.9}>{participant.champLevel}</ChampionLevelBox>
-                  </td>
-                  <td>
-                    <SummonerSpellPerkInfoBox>
-                      {participant.summonerSpellIds.map((id: number) => (
-                        <Image
-                          key={id}
-                          src={`/image/summonerSpell/${id}.png`}
-                          alt="err"
-                          width={20}
-                          height={20}
-                        />
-                      ))}
-                    </SummonerSpellPerkInfoBox>
-                  </td>
-                  <td>
-                    <SummonerSpellPerkInfoBox>
-                      <Image
-                        src={`/image/perk/${participant.perks.styles.primaryStyle.style}/${participant.perks.styles.primaryStyle.selections[0]}.png`} 
-                        alt="err"
-                        width={18}
-                        height={18}
-                        style={{ margin: 2, marginBottom: 1, backgroundColor: 'black', borderRadius: '9999px' }}
-                      />
-                      <Image
-                        src={`/image/perk/${participant.perks.styles.subStyle.style}.png`} 
-                        alt="err"
-                        width={18}
-                        height={18}
-                        style={{ margin: 2, marginBottom: 1, padding: 2 }}
-                      />
-                    </SummonerSpellPerkInfoBox>
-                  </td>
-                  <td>
-                    <Link 
-                      href={`/search/${participant.summonerName}`} 
-                      key={participant.summonerName}
-                    >
-                      {participant.summonerName}
-                    </Link>
-                  </td>
-                  <td>{participant.kills}&nbsp;/&nbsp;{participant.deaths}&nbsp;/&nbsp;{participant.assists}</td>
-                  <td>{participant.totalMinionsKilled}</td>
-                  <td>
-                  <DamageBox damagePercent={Math.floor(participant.totalDamageDealtToChampions*100/props.match.highestDamageDealt)} color={'#ff7b7b'}>{participant.totalDamageDealtToChampions}</DamageBox>
-                    <DamageBox damagePercent={Math.floor(participant.totalDamageTaken*100/props.match.highestDamageTaken)} color={'#9f9f9f'}>{participant.totalDamageTaken}</DamageBox>
-                  </td>
-                  {props.match.gameMode === "CLASSIC" ? (<td style={{ fontSize: '0.75rem' }}>시야 점수:&nbsp;{participant.visionScore}
-                    &nbsp;제어 와드 구매:&nbsp;{participant.visionWardsBoughtInGame}</td>) : null}
-                  <td>
-                    <SummonerItemBox>
-                      {participant.items.map((id: number, index: number) => (
-                        <Image
-                          key={index}
-                          src={`/image/item/${id}.png`}
-                          alt="err"
-                          width={25}
-                          height={25}
-                          style={{ margin: 1 }}
-                        />
-                      ))}
-                    </SummonerItemBox>
-                  </td>
-                </DetailSummonerBox>
-          )}})}
-        </tbody>
-      </MatchDetail>
       </>}
     </MatchListItem>
   )

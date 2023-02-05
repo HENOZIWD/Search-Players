@@ -98,7 +98,8 @@ export async function getServerSideProps({ params }: ISummonerName) {
     let matchListData = new Array<IReducedMatchData>();
 
     matchListFullData.map((match: IMatchData) => {
-      let participantsData = new Array<IParticipantsInfoData>();
+      let blueTeamParticipantsData = new Array<IParticipantsInfoData>();
+      let redTeamParticipantsData = new Array<IParticipantsInfoData>();
       let currentSummonerIndex = 0;
       
       let highestDamageDealt = 0;
@@ -168,7 +169,12 @@ export async function getServerSideProps({ params }: ISummonerName) {
 
         // console.log(pInfoData);
 
-        participantsData.push(pInfoData);
+        if (participant.teamId === 100) {
+          blueTeamParticipantsData.push(pInfoData);
+        }
+        else {
+          redTeamParticipantsData.push(pInfoData);
+        }
       })
 
       const gameDuration: number = match.info.gameDuration;
@@ -187,7 +193,8 @@ export async function getServerSideProps({ params }: ISummonerName) {
         gameEndTimestamp: match.info.gameEndTimestamp,
         gameMode: match.info.gameMode,
         gameType: match.info.gameType,
-        participantsInfo: participantsData,
+        participantsInfo: [blueTeamParticipantsData,
+                           redTeamParticipantsData],
         queueId: match.info.queueId,
         highestDamageDealt: highestDamageDealt,
         highestDamageTaken: highestDamageTaken,
