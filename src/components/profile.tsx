@@ -1,26 +1,6 @@
 import Image from 'next/image';
 import styled from 'styled-components';
-
-export interface IRankData {
-  leagueId: string;
-  queueType: string;
-  tier: string;
-  rank: string;
-  leaguePoints: number;
-  wins: number;
-  losses: number;
-}
-
-export interface IProfileData {
-  accountId: string;
-  profileIconId: number;
-  revisionDate: number;
-  name: string;
-  id: string;
-  puuid: string;
-  summonerLevel: number;
-  rank: IRankData[];
-}
+import { IProfileData, IRankData } from '@/lib/search';
 
 interface IProfileProps {
   data: IProfileData;
@@ -67,7 +47,7 @@ export default function Profile(props: IProfileProps) {
         <LevelBox>{props.data.summonerLevel}</LevelBox>
         <p style={{ marginTop: '0.6rem' }}>{props.data.name}</p>
       </ProfileItem>
-      {props.data.rank.map((rankData: IRankData) => (
+      {props.data.ranks.map((rankData: IRankData) => (
         <ProfileItem key={rankData.queueType}>
           <p>{rankData.queueType === "RANKED_SOLO_5x5" ? "솔로 랭크" :
               rankData.queueType === "RANKED_FLEX_SR" ? "자유 랭크" :

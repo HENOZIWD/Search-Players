@@ -5,9 +5,6 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/layout';
 import HomeSearch from '@/components/homeSearch';
 
-// const inter = Inter({ subsets: ['latin'] })
-
-
 export default function Home() {
 
   const [summonerName, setSummonerName] = useState<string>("");

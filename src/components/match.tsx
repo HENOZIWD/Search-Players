@@ -2,64 +2,11 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import Image from 'next/image';
 import Link from 'next/link';
-
-interface IPerksData {
-  statPerks: {
-    defense: number;
-    flex: number;
-    offense: number;
-  }
-  styles: {
-    primaryStyle: {
-      selections: number[];
-      style: number;
-    }
-    subStyle: {
-      selections: number[];
-      style: number;
-    }
-  }
-}
-
-export interface IParticipantsInfoData {
-  summonerName: string;
-  teamId: number;
-  win: boolean;
-  kills: number;
-  deaths: number;
-  assists: number;
-  champLevel: number;
-  championId: number;
-  championName: string;
-  goldEarned: number;
-  totalDamageDealtToChampions: number;
-  totalDamageTaken: number;
-  totalMinionsKilled: number;
-  visionScore: number;
-  visionWardsBoughtInGame: number;
-  wardsKilled: number;
-  wardsPlaced: number;
-  items: number[];
-  summonerSpellIds: number[];
-  perks: IPerksData;
-}
-
-export interface IReducedMatchData {
-  matchId: string;
-  currentSummonerIndex: number;
-  gameDuration: string;
-  gameEndTimestamp: number;
-  gameMode: string;
-  gameType: string;
-  participantsInfo: IParticipantsInfoData[][];
-  queueId: number;
-  highestDamageDealt: number;
-  highestDamageTaken: number;
-}
+import { IMatchData, IParticipantData } from '@/lib/search';
 
 interface IMatchProps {
-  match: IReducedMatchData;
-  player: IParticipantsInfoData;
+  match: IMatchData;
+  player: IParticipantData;
 }
 
 const MatchListItem = styled.li`
@@ -212,8 +159,10 @@ export default function Match(props: IMatchProps) {
 
   const queueType = props.match.queueId === 450 ? "무작위 총력전" :
                     props.match.queueId === 440 ? "자유 랭크 게임" :
+                    props.match.queueId === 430 ? "일반 게임" :
                     props.match.queueId === 420 ? "솔로 랭크 게임" :
                     props.match.queueId === 900 ? "URF" :
+                    props.match.queueId === 700 ? "격전" :
                     props.match.queueId;
 
   const onDetailClick = (event: React.MouseEvent) => {
@@ -298,10 +247,10 @@ export default function Match(props: IMatchProps) {
           }
         </DetailBox>
         <Foo />
-        {props.match.participantsInfo.map((team: IParticipantsInfoData[], teamIndex: number) => (
+        {props.match.participantsInfo.map((team: IParticipantData[], teamIndex: number) => (
           <TeamList key={teamIndex}>
             <p style={{ backgroundColor: 'lightgray', alignSelf: 'center', padding: '0.05rem 0.15rem' }}>{teamIndex === 0 ? "Blue Team" : "Red Team"}</p>
-            {team.map((participant: IParticipantsInfoData) => (
+            {team.map((participant: IParticipantData) => (
               <Link
                 key={participant.summonerName}
                 href={`/search/${participant.summonerName}`}
@@ -320,7 +269,7 @@ export default function Match(props: IMatchProps) {
         <DetailTab>종합</DetailTab>
         <DetailTab>빌드</DetailTab>
       </DetailMenu> */}
-      {props.match.participantsInfo.map((team: IParticipantsInfoData[], teamIndex: number) => {
+      {props.match.participantsInfo.map((team: IParticipantData[], teamIndex: number) => {
 
         return (
           <MatchDetail key={teamIndex}>
@@ -330,7 +279,7 @@ export default function Match(props: IMatchProps) {
               </DetailSummonerBox>
             </thead>
             <tbody>
-              {team.map((participant: IParticipantsInfoData) => (
+              {team.map((participant: IParticipantData) => (
                 <DetailSummonerBox key={participant.summonerName}>
                   <td>
                     <Image
