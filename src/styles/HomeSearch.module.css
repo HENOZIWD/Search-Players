@@ -1,0 +1,22 @@
+.title {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.searchForm {
+  display: flex;
+  justify-content: center;
+  margin: 3rem;
+  padding: 3rem;
+}
+
+.searchInput {
+  padding: 1rem;
+  width: 50vw;
+}
+
+.searchSubmit {
+  padding: 1rem;
+}

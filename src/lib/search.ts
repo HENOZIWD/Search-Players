@@ -62,12 +62,14 @@ export interface IParticipantData {
 
 export interface IMatchData {
   matchId: string;
-  currentSummonerIndex: number;
+  playerIndex: number;
+  playerTeam: string;
   gameDuration: string;
   gameEndTimestamp: number;
   gameMode: string;
   gameType: string;
-  participantsInfo: IParticipantData[][];
+  blueTeamParticipantsInfo: IParticipantData[];
+  redTeamParticipantsInfo: IParticipantData[];
   queueId: number;
   highestDamageDealt: number;
   highestDamageTaken: number;
@@ -105,7 +107,10 @@ export async function searchProfile(name: string): Promise<IProfileData | null> 
 
   ranksData.map((data: any) => reducedRanksData.push({
     leagueId: data.leagueId,
-    queueType: data.queueType,
+    queueType: data.queueType === "RANKED_SOLO_5x5" ? "솔로 랭크" :
+               data.queueType === "RANKED_FLEX_SR" ? "자유 랭크" : 
+               data.queueType === "RANKED_TFT_DOUBLE_UP" ? "전략적 팀 전투" : data.queueType,
+    // queueType: data.queueType,
     tier: data.tier,
     rank: data.rank,
     leaguePoints: data.leaguePoints,
@@ -164,14 +169,14 @@ export async function searchMatchDetail(matchId: string, summonerName: string): 
 
   const blueTeamParticipantsData = new Array<IParticipantData>();
   const redTeamParticipantsData = new Array<IParticipantData>();
-  let currentSummonerIndex = 0;
+  let playerIndex = 0;
   
   let highestDamageDealt = 0;
   let highestDamageTaken = 0;
 
   matchDetailData.info.participants.map((participant: any, index: number) => {
     if (participant.summonerName === summonerName) {
-      currentSummonerIndex = index;
+      playerIndex = index;
     }
     if (highestDamageDealt < participant.totalDamageDealtToChampions) {
       highestDamageDealt = participant.totalDamageDealtToChampions;
@@ -247,14 +252,23 @@ export async function searchMatchDetail(matchId: string, summonerName: string): 
 
   const reducedMatchDetail: IMatchData = {
     matchId: matchDetailData.metadata.matchId,
-    currentSummonerIndex: currentSummonerIndex,
+    playerIndex: playerIndex % 5,
+    playerTeam: playerIndex < 5 ? "blue" : "red",
     gameDuration: gameDurationToString,
     gameEndTimestamp: matchDetailData.info.gameEndTimestamp,
-    gameMode: matchDetailData.info.gameMode,
+    gameMode: matchDetailData.info.gameMode === "CLASSIC" ? "소환사의 협곡" :
+              matchDetailData.info.gameMode === "ARAM" ? "칼바람 나락" :
+              matchDetailData.info.gameMode,
     gameType: matchDetailData.info.gameType,
-    participantsInfo: [blueTeamParticipantsData,
-                        redTeamParticipantsData],
-    queueId: matchDetailData.info.queueId,
+    blueTeamParticipantsInfo: blueTeamParticipantsData,
+    redTeamParticipantsInfo: redTeamParticipantsData,
+    queueId: matchDetailData.info.queueId === 450 ? "무작위 총력전" :
+             matchDetailData.info.queueId === 440 ? "자유 랭크 게임" :
+             matchDetailData.info.queueId === 430 ? "일반 게임" :
+             matchDetailData.info.queueId === 420 ? "솔로 랭크 게임" :
+             matchDetailData.info.queueId === 900 ? "URF" :
+             matchDetailData.info.queueId === 700 ? "격전" :
+             matchDetailData.info.queueId,
     highestDamageDealt: highestDamageDealt,
     highestDamageTaken: highestDamageTaken,
   };

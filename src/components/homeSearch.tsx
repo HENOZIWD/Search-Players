@@ -1,42 +1,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import styled from 'styled-components';
-
-const SearchForm = styled.form`
-  display: flex;
-  justify-content: center;
-  padding: 5px;
-  align-self: center;
-`
-
-const SearchBox = styled.input`
-  width: 500px;
-  height: 30px;
-  margin: 10px 5px;
-  padding: 5px;
-  border-radius: 10px;
-  border: 1px solid blue;
-`
-
-const SearchButton = styled.button`
-  width: 80px;
-  height: 30px;
-  margin: 10px 5px;
-  border-radius: 10px;
-  border: 1px solid blue;
-`
+import styles from '@/styles/HomeSearch.module.css';
 
 export default function HomeSearch() {
 
   const [summonerName, setSummonerName] = useState<string>("");
   const router = useRouter();
 
-  const searchHandleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     setSummonerName(event.target.value);
   }
 
-  const searchHandleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const searchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (summonerName === "") {
@@ -48,12 +24,23 @@ export default function HomeSearch() {
   }
 
   return (
-    <SearchForm onSubmit={searchHandleSubmit}>
-      <SearchBox 
-        value={summonerName} 
-        onChange={searchHandleChange}
+    <>
+    <div className={styles.title}>Search Summoner</div>
+    <form 
+      className={styles.searchForm}
+      onSubmit={searchSubmit}>
+      <input 
+        className={styles.searchInput}
+        type="search"
+        value={summonerName}
+        onChange={searchChange}
       />
-      <SearchButton type="submit">search</SearchButton>
-    </SearchForm>
-  );
+      <input 
+        className={styles.searchSubmit}
+        type="submit" 
+        value="Search"
+      />
+    </form>
+    </>
+  )
 }

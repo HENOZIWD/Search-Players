@@ -1,0 +1,15 @@
+.profile {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
+  column-gap: 3rem;
+  padding: 1rem;
+  width: 50rem;
+}
+
+.summoner {
+  text-align: center;
+}
+
+.rank {
+  text-align: center;
+}
