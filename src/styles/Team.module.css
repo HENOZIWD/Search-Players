@@ -1,0 +1,23 @@
+.team {
+  display: grid;
+  list-style: none;
+  padding: 0px;
+  margin: 0px;
+  place-self: start;
+}
+
+.summoner {
+  font-size: 0.8rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.summoner a {
+  color: gray;
+  text-decoration-line: none;
+}
+
+.summoner a:hover {
+  text-decoration-line: underline;
+}

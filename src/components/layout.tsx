@@ -1,31 +1,54 @@
 import Link from 'next/link';
-import styled from 'styled-components';
-import LayoutSearch from './layoutSearch';
+import styles from '@/styles/Layout.module.css';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 
-const HeaderLayout = styled.div`
-  /* width: 100vw; */
-  height: 80px;
-  display: flex;
-  flex-direction: row;
-  padding: 1rem;
-`
+export default function Layout({ children }: { children: React.ReactNode }) {
 
-const Foo = styled.div`
-  flex: 1;
-`
+  const [summonerName, setSummonerName] = useState<string>("");
+  const router = useRouter();
 
-export default function Layout({ children, home }: { children: React.ReactNode, home?: boolean }) {
+  const searchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    setSummonerName(event.target.value);
+  }
 
-  // LayoutSearch = 
+  const searchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (summonerName === "") {
+      alert("소환사명을 입력하세요.");
+    }
+    else {
+      router.push(`/search/${summonerName}`);
+    }
+  }
 
   return (
     <>
-      <HeaderLayout>
-        <Link href="/">Home</Link>
-        <Foo />
-        {home ? null : <LayoutSearch />}
-      </HeaderLayout>
-      {children}
+    <div className={styles.header}>
+      <Link
+        href="/"
+      >
+        Search Summoner
+      </Link>
+      <form 
+        className={styles.searchForm}
+        onSubmit={searchSubmit}>
+        <input 
+          className={styles.searchInput}
+          type="search"
+          value={summonerName}
+          onChange={searchChange}
+        />
+        <input 
+          className={styles.searchSubmit}
+          type="submit" 
+          value="Search"
+        />
+      </form>
+    </div>
+    {children}
     </>
-  );
+  )
 }
