@@ -21,9 +21,12 @@ export default function Team(props: ITeamProps) {
           alt={participant.championName}
           width={20}
           height={20}
+          // priority={true}
         />
         <Link
           href={`/search/${participant.summonerName}`}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
         >
           {participant.summonerName}
         </Link>

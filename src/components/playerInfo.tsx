@@ -16,6 +16,7 @@ export default function PlayerInfo(props: IPlayerInfoProps) {
         alt={props.data.championName}
         width={50}
         height={50}
+        priority={true}
       />
       <div className={styles.perk}>
         <Image
@@ -23,12 +24,14 @@ export default function PlayerInfo(props: IPlayerInfoProps) {
           alt={props.data.perks.styles.primaryStyle.selections[0].toString()}
           width={25}
           height={25}
+          // priority={true}
         />
         <Image
           src={`/image/perk/${props.data.perks.styles.subStyle.style}.png`}
           alt={props.data.perks.styles.subStyle.style.toString()}
           width={25}
           height={25}
+          // priority={true}
         />
       </div>
       <div className={styles.kda}>{props.data.kills} / {props.data.deaths} / {props.data.assists}</div>
@@ -52,6 +55,7 @@ export default function PlayerInfo(props: IPlayerInfoProps) {
             alt={spell.toString()}
             width={25}
             height={25}
+            // priority={true}
           />
         ))}
       </div>
@@ -64,6 +68,7 @@ export default function PlayerInfo(props: IPlayerInfoProps) {
             alt={item.toString()}
             width={30}
             height={30}
+            // priority={true}
           />
         ))}
       </div>

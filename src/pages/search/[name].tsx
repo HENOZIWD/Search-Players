@@ -2,6 +2,8 @@ import Head from 'next/head';
 import MatchList from '@/components/matchList';
 import Profile from '@/components/profile';
 import { IMatchData, IProfileData, searchMatchDetail, searchMatchIds, searchProfile } from '@/lib/search';
+import { ReactElement } from 'react';
+import Layout from '@/components/layout';
 
 interface ISummonerProps {
   profileData: IProfileData,
@@ -64,5 +66,14 @@ export default function Summoner(props: ISummonerProps) {
       {props.profileData && <Profile data={props.profileData}/>}
       {props.matchesData && <MatchList data={props.matchesData}/>}
     </>
+  )
+}
+
+Summoner.getLayout = function getLayout(page: ReactElement) {
+
+  return (
+    <Layout>
+      {page}
+    </Layout>
   )
 }

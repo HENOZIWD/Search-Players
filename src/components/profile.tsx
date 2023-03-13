@@ -17,6 +17,7 @@ export default function Profile(props: IProfileProps) {
           alt={props.data.profileIconId.toString()}
           width={150}
           height={150}
+          priority={true}
         />
         <div>Lv. {props.data.summonerLevel}</div>
         <div>{props.data.name}</div>
